@@ -1,0 +1,51 @@
+extends layout
+
+block content
+  .w3-container
+    h2.w3-center.w3-xxlarge.w3-text-indigo País: #{pais}
+
+    h3 Edições em que participou
+    if participacoes.length > 0
+      table.w3-table-all.w3-hoverable
+        thead
+          tr
+            th ID da Edição
+            th Ano
+            th Nome da Música
+            th Intérprete
+            th Venceu?
+        tbody
+          each edicao in participacoes
+            tr
+              td
+                a(href=`/${edicao._id}`) #{edicao._id}
+              td #{edicao.anoEdicao}
+              td 
+                - // Considera a primeira música do país, ou vazio se não existir
+                - const musicaDoPais = edicao.musicas ? edicao.musicas.find(m => m.pais === pais) : null;
+                = musicaDoPais ? musicaDoPais.titulo : '-'
+              td
+                = musicaDoPais ? musicaDoPais.interprete : '-'
+              td
+                = (edicao.vencedor === pais) ? 'Sim' : 'Não'
+    else
+      p Nenhuma participação encontrada.
+
+    h3 Edições organizadas
+    if organizadas.length > 0
+      table.w3-table-all.w3-hoverable
+        thead
+          tr
+            th ID da Edição
+            th Ano
+        tbody
+          each edicao in organizadas
+            tr
+              td
+                a(href=`/edicoes/${edicao._id}`) #{edicao._id}
+              td #{edicao.anoEdicao}
+    else
+      p Nenhuma edição organizada.
+
+    .w3-left.w3-margin-top
+      a.w3-button.w3-red.w3-round-xxlarge(href='/') ⬅ Voltar à Página Principal

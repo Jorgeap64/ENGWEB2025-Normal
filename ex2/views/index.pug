@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h2.w3-center Lista de Edições Eurovisão
+  table.w3-table-all.w3-hoverable
+    thead
+      tr
+        th ID da Edição
+        th Ano da Edição
+        th País Organizador
+        th País Vencedor
+    tbody
+      each edicao in edicoes
+        tr
+          td 
+            a(href=`/${edicao._id}`) #{edicao._id}
+          td #{edicao.anoEdicao}
+          td 
+            a(href=`/paises/${encodeURIComponent(edicao.organizacao)}`) #{edicao.organizacao}
+          td 
+            a(href=`/paises/${encodeURIComponent(edicao.vencedor)}`) #{edicao.vencedor}
