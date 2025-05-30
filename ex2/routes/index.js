@@ -45,34 +45,31 @@ router.get('/paises/:pais', async (req, res) => {
     const organizadas = orgResponse.data;
 
     const vencResponse = await axios.get('http://localhost:25000/edicoes?papel=venc');
-
     const paisVencedor = vencResponse.data.find(pv => pv.pais === pais);
     const vencidas = paisVencedor ? paisVencedor.anos : [];
 
     const allEdicoesResponse = await axios.get('http://localhost:25000/edicoes');
     const allEdicoes = allEdicoesResponse.data;
 
-    const vencidasDetalhadas = allEdicoes.filter(e => e.vencedor === pais);
+    // Use a Set of all edition IDs related to the country (organized or won)
+    const edicoesIds = new Set([
+      ...organizadas.map(e => e._id || e.id),
+      ...allEdicoes.filter(e => e.vencedor === pais).map(e => e._id || e.id)
+    ]);
 
-    const participacoesMap = new Map();
+    // Fetch full editions details for all participations to have musics
+    const participacoes = [];
+    for (const id of edicoesIds) {
+      const edResponse = await axios.get(`http://localhost:25000/edicoes/${id}`);
+      const edicao = edResponse.data;
+      edicao.venceu = (edicao.vencedor === pais);
+      participacoes.push(edicao);
+    }
 
-    organizadas.forEach(e => participacoesMap.set(e._id || e.id || e.anoEdicao, { ...e, venceu: false }));
-    vencidasDetalhadas.forEach(e => {
-      const key = e._id || e.id || e.anoEdicao;
-      if (participacoesMap.has(key)) {
-        participacoesMap.get(key).venceu = true;
-      } else {
-        participacoesMap.set(key, { ...e, venceu: true });
-      }
-    });
-
-    const participacoes = Array.from(participacoesMap.values());
-
-    // Passar para render
     res.render('pais', {
       pais,
       organizadas,
-      vencidas: vencidasDetalhadas,
+      vencidas: participacoes.filter(e => e.venceu),  // you can reuse participacoes here
       participacoes
     });
   } catch (err) {
@@ -80,6 +77,7 @@ router.get('/paises/:pais', async (req, res) => {
     res.status(500).send('Erro ao obter dados do país');
   }
 });
+
 
 
 module.exports = router;
